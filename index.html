@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>AI-Based Fake News Detection System</title>
+
+<style>
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #141e30, #243b55);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    width: 90%;
+    max-width: 760px;
+    background: white;
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px #0005;
+}
+
+h1 {
+    text-align: center;
+    color: #243b55;
+}
+
+.sub {
+    text-align: center;
+    color: #666;
+}
+
+textarea {
+    width: 100%;
+    height: 190px;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    resize: vertical;
+}
+
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 13px 30px;
+    border: none;
+    border-radius: 9px;
+    background: #243b55;
+    color: white;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #141e30;
+}
+
+#result {
+    display: none;
+    margin-top: 25px;
+    padding: 18px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.real {
+    background: #e8f7ee;
+    color: #137333;
+}
+
+.fake {
+    background: #fdecec;
+    color: #b3261e;
+}
+
+.error {
+    background: #fff4e5;
+    color: #8a4b08;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>🤖 AI-Based Fake News Detection System</h1>
+
+<p class="sub">
+Enter a news article and let the machine-learning model classify it.
+</p>
+
+<textarea
+id="newsText"
+placeholder="Paste or type the news article here...">
+</textarea>
+
+<button onclick="checkNews()">
+🔍 Check News
+</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+async function checkNews() {
+
+    const text =
+        document.getElementById("newsText").value.trim();
+
+    const result =
+        document.getElementById("result");
+
+    if (!text) {
+
+        result.className = "error";
+
+        result.style.display = "block";
+
+        result.textContent =
+            "⚠️ Please enter a news article.";
+
+        return;
+    }
+
+    result.className = "";
+
+    result.style.display = "block";
+
+    result.textContent = "Checking...";
+
+    try {
+
+        const response = await fetch(
+            "/predict",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    text: text
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || "Prediction failed"
+            );
+        }
+
+        result.className =
+            data.label === "REAL"
+            ? "real"
+            : "fake";
+
+        result.innerHTML =
+            (data.label === "REAL"
+            ? "✅ REAL NEWS"
+            : "❌ FAKE NEWS")
+            +
+            "<br><small>Confidence: "
+            +
+            data.confidence
+            +
+            "%</small>";
+
+    }
+
+    catch (error) {
+
+        result.className = "error";
+
+        result.textContent =
+            "⚠️ " + error.message;
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>
